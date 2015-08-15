@@ -1,0 +1,53 @@
+package your.package.name;
+
+import org.bukkit.ChatColor;
+import org.bukkit.Effect;
+import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.inventory.ItemStack;
+
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
+import com.gmail.filoghost.holographicdisplays.api.handler.PickupHandler;
+import com.gmail.filoghost.holographicdisplays.api.line.ItemLine;
+import com.iHolden.coins.api.Coins;
+import com.iHolden.hologramdrops.Main;
+
+public class HologramCoins implements Listener {
+	/*
+	 * Note this requires holograhpic displays
+	 * When a player dies, there will be a item that says "Username's Coins"
+	 * When it's walked over, it will give the user 150 coins
+	 */
+  /
+	static Main plugin;
+	public HologramCoins(Main instance) {
+		plugin = instance;
+	}
+	@EventHandler
+	public void onEntityDeath(EntityDeathEvent event) {		
+		if (event.getEntityType() == EntityType.PLAYER) {
+			final Hologram hologram = HologramsAPI.createHologram(plugin, event.getEntity().getLocation().add(0.0, 0.9, 0.0));
+			hologram.appendTextLine(ChatColor.AQUA  + "" + ChatColor.BOLD + event.getEntity().getName() + "'s Coins");
+			ItemLine icon = hologram.appendItemLine(new ItemStack(Material.DOUBLE_PLANT));
+			
+			icon.setPickupHandler(new PickupHandler() {
+				
+				@Override
+				public void onPickup(Player player) {		
+					player.playSound(player.getLocation(), Sound.LEVEL_UP, 1F, 2F);
+					player.playEffect(hologram.getLocation(), Effect.MOBSPAWNER_FLAMES, null);
+					player.sendMessage(ChatColor.GOLD + "You have picked up 150 coins!");
+					Coins.addCoins(event.getEntity().getName(), 150);
+					hologram.delete();
+					
+				}	
+			});
+		}
+	}
+}
